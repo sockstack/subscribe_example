@@ -19,10 +19,12 @@ public class NotifyDemo {
         RecordListener mysqlRecordPrintListener = new RecordListener() {
             @Override
             public void consume(UserRecord record) {
-                // consume record
+                // 消费记录
                 // MysqlRecordPrinter show how to go through record fields and get general attributes
+                // 把记录转换成sql字符串
                 String ret = MysqlRecordPrinter.recordToString(record.getRecord());
         //        log.info(ret);
+                // 确认消费
                 record.commit(String.valueOf(record.getRecord().getSourceTimestamp()));
             }
         };
@@ -58,6 +60,7 @@ public class NotifyDemo {
     public static void main(String[] args) throws InterruptedException {
 
         try{
+            // 启动
             boot(getConfigs(), buildRecordListener());
         }catch(Throwable e){
             log.error("NotifyDemo: failed cause " + e.getMessage(), e);

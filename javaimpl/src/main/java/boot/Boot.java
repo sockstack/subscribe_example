@@ -39,17 +39,22 @@ public class Boot {
     public static void boot(Properties properties, Map<String, RecordListener> recordListeners) {
         // first init log4j
         initLog4j();
+        // 判断是否设置监听者
         require(null != recordListeners && !recordListeners.isEmpty(), "record listener required");
         Context context = getStreamContext(properties);
         // check config
         checkConfig(properties);
+        // 获取记录生成器
         RecordGenerator recordGenerator = getRecordGenerator(context, properties);
+        // 获取ETL记录处理器
         EtlRecordProcessor etlRecordProcessor = getEtlRecordProcessor(context, properties, recordGenerator);
+        // 注册所有的监听者
         recordListeners.forEach((k, v) -> {
             log.info("Boot: register record listener " + k);
             etlRecordProcessor.registerRecordListener(k, v);
         });
         registerSignalHandler(context);
+        // 启动正常
         List<WorkThread> startStream = startWorker(etlRecordProcessor, recordGenerator);
 
         while (!existed.get() ) {
@@ -85,6 +90,11 @@ public class Boot {
         Signal.handle(new Signal("INT"), signalHandler);
     }
 
+    /**
+     * 获取上下文
+     * @param properties
+     * @return
+     */
     private static Context getStreamContext(Properties properties) {
         Context ret =  new Context();
         return ret;
@@ -104,6 +114,12 @@ public class Boot {
         return streamCheckpoint;
     }
 
+    /**
+     * 获取记录生成器
+     * @param context
+     * @param properties
+     * @return
+     */
     private static RecordGenerator getRecordGenerator(Context context, Properties properties) {
 
         RecordGenerator recordGenerator = new RecordGenerator(properties, context,
